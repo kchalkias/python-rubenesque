@@ -1,34 +1,15 @@
 from random import randint
-from hashlib import sha256
-
 import rubenesque.curves
-
 
 secp256r1 = rubenesque.curves.find('secp256r1')
 
-
-def hash_list(lst):
-    h = sha256()
-    for i in lst:
-        h.update(i)
-    return int(h.hexdigest(), 16)
-
-
-def hash_msg_and_point_xcord(msg, point):
-    return hash_list([msg, str(point.x).encode()])
-
-
-def hash_point_xcord_and_msg(point, msg):
-    return hash_list([str(point.x).encode(), msg])
-
-
-def hash_points(points):
-    return hash_list([str(point.x).encode() for point in points])
+from .utils import *
 
 
 def test_schnorr_sig1():
     # https://crypto.stackexchange.com/q/50221
-    point_P = secp256r1.generator() * secp256r1.private_key()   # A public point
+    point_P = secp256r1.generator() * secp256r1.private_key()   # Generator
+
     l = point_P.order
     a = randint(1, l)       # secret key
     point_Q = point_P * a   # public key

@@ -104,6 +104,11 @@ class Point(abc.ABC):
         "The secondary coordinate"
         return self.y
 
+    @property
+    def double(self):
+        # Point doubling
+        return self + self
+
     @abc.abstractmethod
     def __add__(self, other):
         "Adds two points"
