@@ -61,9 +61,9 @@ def test_sigma_pok_message_and_randomness_in_pedersen_commitment():
     assert verify_knowledge_of_opening_of_pedersen_commitment(g, h, P, t, s1, s2)
 
 
-def test_sigma_pok_message_and_randomness_in_pedersen_commitments_equal():
+def test_sigma_message_and_randomness_in_pedersen_commitments_equal():
     # Prove knowledge of message and randomness in 2 Pedersen commitments with different generators
-    # and prove they are equal equal, PoK(a, b): g1^a.h1^b = g2^a.h2^b
+    # and prove they are equal, PoK(a, b): P = g1^a.h1^b, Q = g2^a.h2^b
     g1, h1, g2, h2 = get_generators(4)
     a = get_random_value()
     b = get_random_value()
@@ -72,6 +72,19 @@ def test_sigma_pok_message_and_randomness_in_pedersen_commitments_equal():
 
     (t1, s1), (t2, s2) = prove_knowledge_and_eq_of_opening_of_pedersen_commitments(g1, h1, g2, h2, P, Q, a, b)
     assert verify_knowledge_and_eq_of_opening_of_pedersen_commitments(g1, h1, g2, h2, P, Q, (t1, s1), (t2, s2))
+
+
+def test_sigma_message_in_pedersen_commitments_equal():
+    # Prove knowledge of message and randomness in 2 Pedersen commitments with different generators
+    # and prove that messages are equal, PoK(a, b, d): P = g1^a.h1^b, Q = g2^a.h2^d
+    g1, h1, g2, h2 = get_generators(4)
+    a = get_random_value()
+    b = get_random_value()
+    d = get_random_value()
+    P = g1 * a + h1 * b
+    Q = g2 * a + h2 * d
+    (t1, s1), (t2, s2), s3 = prove_knowledge_and_eq_of_message_in_pedersen_commitments(g1, h1, g2, h2, P, Q, a, b, d)
+    assert verify_knowledge_and_eq_of_message_in_pedersen_commitments(g1, h1, g2, h2, P, Q, (t1, s1), (t2, s2), s3)
 
 
 def test_sigma_discrete_log_inequality():
@@ -210,7 +223,7 @@ def verify_knowledge_of_opening_of_pedersen_commitment(g, h, P, t, s1, s2):
 
 
 def prove_knowledge_and_eq_of_opening_of_pedersen_commitments(g1, h1, g2, h2, P, Q, a, b):
-    # PoK(a, b): g1^a.h1^b = g2^a.h2^b
+    # PoK(a, b): P = g1^a.h1^b, Q = g2^a.h2^b
     r1 = get_random_value()
     r2 = get_random_value()
     t1 = g1 * r1 + h1 * r2
@@ -226,6 +239,31 @@ def verify_knowledge_and_eq_of_opening_of_pedersen_commitments(g1, h1, g2, h2, P
     (t2, s2) = t2s2
     lhs1 = g1 * s1 + h1 * s2
     lhs2 = g2 * s1 + h2 * s2
+    c = hash_points([g1, h1, g2, h2, P, Q, t1, t2])
+    rhs1 = t1 + (P * c)
+    rhs2 = t2 + (Q * c)
+    return (lhs1 == rhs1) and (lhs2 == rhs2)
+
+
+def prove_knowledge_and_eq_of_message_in_pedersen_commitments(g1, h1, g2, h2, P, Q, a, b, d):
+    # PoK(a, b, d): P = g1^a.h1^b, Q = g2^a.h2^d
+    r1 = get_random_value()
+    r2 = get_random_value()
+    r3 = get_random_value()
+    t1 = g1 * r1 + h1 * r2
+    t2 = g2 * r1 + h2 * r3
+    c = hash_points([g1, h1, g2, h2, P, Q, t1, t2])
+    s1 = (r1 + ((c * a) % ORDER)) % ORDER
+    s2 = (r2 + ((c * b) % ORDER)) % ORDER
+    s3 = (r3 + ((c * d) % ORDER)) % ORDER
+    return (t1, s1), (t2, s2), s3
+
+
+def verify_knowledge_and_eq_of_message_in_pedersen_commitments(g1, h1, g2, h2, P, Q, t1s1, t2s2, s3):
+    (t1, s1) = t1s1
+    (t2, s2) = t2s2
+    lhs1 = g1 * s1 + h1 * s2
+    lhs2 = g2 * s1 + h2 * s3
     c = hash_points([g1, h1, g2, h2, P, Q, t1, t2])
     rhs1 = t1 + (P * c)
     rhs2 = t2 + (Q * c)
