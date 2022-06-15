@@ -75,7 +75,7 @@ def test_sigma_message_and_randomness_in_pedersen_commitments_equal():
 
 
 def test_sigma_message_in_pedersen_commitments_equal():
-    # Prove knowledge of message and randomness in 2 Pedersen commitments with different generators
+    # Prove knowledge of message in 2 Pedersen commitments with different generators
     # and prove that messages are equal, PoK(a, b, d): P = g1^a.h1^b, Q = g2^a.h2^d
     g1, h1, g2, h2 = get_generators(4)
     a = get_random_value()
